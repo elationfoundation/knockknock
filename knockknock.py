@@ -22,7 +22,7 @@ USA
 """
 
 import time, os, sys
-import getopt
+import argparse
 import subprocess
 
 from struct import *
@@ -31,33 +31,49 @@ from knockknock.Profile import Profile
 def usage():
     print "Usage: knockknock.py -p <portToOpen> <host>"
     sys.exit(2)
-    
+
+def valid_host_path(string):
+    host_dir = ""
+    path = os.path.abspath(string)
+    #Check if relative path, absolute path, or neither.
+    if os.path.exists(path):
+        host_dir = path
+    elif os.path.exists(os.path.join("/", string)):
+        host_dir = os.path.join("/", string)
+    else:        
+        msg = "The path {0} is not a valid knockknock path.".format(string)
+        raise argparse.ArgumentTypeError(msg)
+    if not os.path.isdir(host_dir):
+        msg = "The path {0} must be a directory.".format(string)
+        raise argparse.ArgumentTypeError(msg)
+    for cfg in ["counter". "cipher.key", "mac.key", "config"]:
+        if not os.isfile(os.path.join(host_dir, cfg)):
+            msg = "The path {0} is not a valid knockknock host directory.".format(string)
+            raise argparse.ArgumentTypeError(msg)
+    return host_dir
+
 def parseArguments(argv):
-    try:
-        port       = 0
-        host       = ""
-        opts, args = getopt.getopt(argv, "h:p:")
-        
-        for opt, arg in opts:
-            if opt in ("-p"):
-                port = arg
-            else:
-                usage()
-                
-        if len(args) != 1:
-            usage()
+
+    port       = 0
+    host       = ""
+    directory  = None
+    arg_p = argparse.ArgumentParser("Open a port on a specified KnockKnock server.")
+    arg_p.add_argument("-p", "--port", type=int, choices=range(1, 65535), help="What port to open on the KnockKnock server.")
+    arg_p.add_argument("-h", "--host", help="The host to connect to.")
+    arg_p.add_argument("-d", "--directory", help="The folder where the config, keys, and counter are stored.", type=valid_host_path)
+    args = arg_parser.parse_args()
+    
+    return (args.port, args.host, args.directory)
+
+def getProfile(host, directory=None):
+    #process a directory is passed
+    if directory:
+        if os.path.isdir(directory):
+            return Profile(directory, hostname=host)
         else:
-            host = args[0]
-
-    except getopt.GetoptError:           
-        usage()                          
-
-    if port == 0 or host == "":
-        usage()
-
-    return (port, host)
-
-def getProfile(host):
+            print "Error: the directory at {0} does not exist.".format(directory)
+            sys.exit(2)
+    #Process default directory
     homedir = os.path.expanduser('~')
     
     if not os.path.isdir(homedir + '/.knockknock/'):
@@ -87,10 +103,10 @@ def existsInPath(command):
     return None
 
 def main(argv):
-    (port, host) = parseArguments(argv)
+    (port, host, directory) = parseArguments(argv)
     verifyPermissions()
     
-    profile      = getProfile(host)
+    profile      = getProfile(host, directory)
     port         = pack('!H', int(port))
     packetData   = profile.encrypt(port)
     knockPort    = profile.getKnockPort()

@@ -26,11 +26,15 @@ from CryptoEngine import CryptoEngine
 
 class Profile:
 
-    def __init__(self, directory, cipherKey=None, macKey=None, counter=None, knockPort=None):
+    def __init__(self, directory, cipherKey=None, macKey=None, counter=None, knockPort=None, hostname=None):
         self.counterFile  = None
         self.directory    = directory
-        self.name         = directory.rstrip('/').split('/')[-1]
-
+        #if a hostname is passed use that instead of the directory.
+        if not hostname:
+            self.name         = directory.rstrip('/').split('/')[-1]
+        else:
+            self.name = hostname
+            
         if (cipherKey == None):
             self.deserialize()
         else:
