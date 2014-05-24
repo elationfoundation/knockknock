@@ -141,7 +141,7 @@ sudo knockknock -p 22 -s myserver.com
 
 You now have the amount of time specified by the 'delay' parameter in /etc/knockknock.d/config on the server to connect from your client's IP address to port 22 (defaults to 15 seconds).  As soon as you connect, no further connections will be allowed unless another knockknock request is issued.
 
-Specifying a knockknock profiles:
+### Specifying a knockknock profiles:
 
 If you are keeping your knockknock profiles in an encrypted volume or on portable media you can use the "directory" option to specify the directory to use as the profile.
 
@@ -151,13 +151,13 @@ sudo knockknock -p 22 -s myserver.com -d /media/truecrypt6/myserver_profile
 
 This is also useful if you have a host with a dynamic hostname. You can use the -d option to select a profile with a differnt name than the host selected.
 
-Optionally using knockknock-proxy:
+### Optionally using knockknock-proxy:
 
 After you have the basic knockknock system running, you might find yourself wishing that you didn't have to type "knockknock -p <whatever> myserver.com" all the time.  It's not such a big deal for opening an ssh session, but what about your pop3 client? That's the kind of software which might want to periodically make connections on its own, and even if it doesn't, opening up a terminal to run 'knockknock' every time you'd like to click 'check mail' is kind of a drag.
 
 So knockknock-proxy is a small SOCKS proxy that is knockknock-aware.  It binds to a port you specify on localhost, and then implements the SOCKS protocol as usual.  However, whenver it sees a request for a connection to a host that you have configured knockknock for, it quickly sends a knock to the server before proxying the connection through.  The upshot is that any application which has SOCKS proxy support will seamlessly auto-knock each time it would like to make a connection.
 
-To run knockknock-proxy, you simply execute:
+### To run knockknock-proxy, you simply execute:
 
 ```bash
 sudo knockknock-proxy <listenPort>
