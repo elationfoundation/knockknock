@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 USA
 
 """
-
 import time, os, sys
 import argparse
 import subprocess
@@ -29,26 +28,27 @@ from struct import *
 from knockknock.Profile import Profile
 
 def usage():
-    print "Usage: knockknock.py -p <portToOpen> <host>"
+    print "Usage: knockknock.py -p <portToOpen> -s <server/host> -d <directory of knockknock profile>"
     sys.exit(2)
 
 def valid_host_path(string):
     host_dir = ""
-    path = os.path.abspath(string)
+    path = os.path.abspath(os.path.normpath(string))
     #Check if relative path, absolute path, or neither.
     if os.path.exists(path):
         host_dir = path
     elif os.path.exists(os.path.join("/", string)):
         host_dir = os.path.join("/", string)
-    else:        
+    else:
+        print(path)
         msg = "The path {0} is not a valid knockknock path.".format(string)
         raise argparse.ArgumentTypeError(msg)
     if not os.path.isdir(host_dir):
         msg = "The path {0} must be a directory.".format(string)
         raise argparse.ArgumentTypeError(msg)
-    for cfg in ["counter". "cipher.key", "mac.key", "config"]:
-        if not os.isfile(os.path.join(host_dir, cfg)):
-            msg = "The path {0} is not a valid knockknock host directory.".format(string)
+    for cfg in ["counter", "cipher.key", "mac.key", "config"]:
+        if not os.path.isfile(os.path.join(host_dir, cfg)):
+            msg = "The path {0} is not a valid knockknock host directory. It is missing {1}".format(string, cfg)
             raise argparse.ArgumentTypeError(msg)
     return host_dir
 
@@ -59,11 +59,11 @@ def parseArguments(argv):
     directory  = None
     arg_p = argparse.ArgumentParser("Open a port on a specified KnockKnock server.")
     arg_p.add_argument("-p", "--port", type=int, choices=range(1, 65535), help="What port to open on the KnockKnock server.")
-    arg_p.add_argument("-h", "--host", help="The host to connect to.")
+    arg_p.add_argument("-s", "--server", help="The server to connect to.")
     arg_p.add_argument("-d", "--directory", help="The folder where the config, keys, and counter are stored.", type=valid_host_path)
-    args = arg_parser.parse_args()
+    args = arg_p.parse_args()
     
-    return (args.port, args.host, args.directory)
+    return (args.port, args.server, args.directory)
 
 def getProfile(host, directory=None):
     #process a directory is passed

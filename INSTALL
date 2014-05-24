@@ -54,16 +54,20 @@ Configuring The Client:
     on to the client machine.  You can copy the values by hand, email
     the files (securely!), or (if you have root access), scp them.
   
-    The files need to end up in '~/.knockknock/<serverHostName>/' on
-    the client machine.  That is, if the server is called
-    myserver.com, the profile information would be copied to
-    '/home/clement/.knockknock/myserver.com/' on the client.  Using
-    scp:
-  
-    * scp \
-      root@myserver.com:/etc/knockknock.d/profiles/laptop-clement/* \
-      ~/.knockknock/myserver.com/
+    The default settings for knockknock put the files  in 
+    '~/.knockknock/<serverHostName>/' on the client machine. That is, 
+    if the server is called myserver.com, the profile information would 
+    be copied to '/home/clement/.knockknock/myserver.com/' on the client.
     
+    Using scp:
+    ```bash
+    scp root@myserver.com:/etc/knockknock.d/profiles/laptop-clement/* ~/.knockknock/myserver.com/
+    ```
+
+    You can also specify a host folder by using the -d flag. This will allow
+    you to keep your host files seperate from your computer, in an 
+    encrypted volume, or in a folder in a different directory.
+
 Configuring The Server Firewall Rules:
 
     The goal here is to firewall off all the ports that you don't want
@@ -115,16 +119,30 @@ Using knockknock:
     Now that you have knockknock-daemon running, the firewall rules
     configured on the server, and your profile installed on the
     client, you're ready to open some ports.  On the client, you
-    simply run 'knockknock -p <portToOpen> myserver.com'.  To open,
+    simply run 'knockknock -p <portToOpen> -s myserver.com'.  To open,
     for instance, ssh (22):
   
-    * sudo knockknock -p 22 myserver.com
+    * sudo knockknock -p 22 -s myserver.com
   
     You now have the amount of time specified by the 'delay' parameter
     in /etc/knockknock.d/config on the server to connect from your
     client's IP address to port 22 (defaults to 15 seconds).  As soon
     as you connect, no further connections will be allowed unless
     another knockknock request is issued.
+
+Specifying a knockknock profiles:
+
+    If you are keeping your knockknock profiles in an encrypted volume
+    or on portable media you can use the "directory" option to specify
+    the directory to use as the profile.
+
+    ```bash
+    sudo knockknock -p 22 -s myserver.com -d /media/truecrypt6/myserver_profile
+    ```
+
+    This is also useful if you have a host with a dynamic hostname. You
+    can use the -d option to select a profile with a differnt name than
+    the host selected.
 
 Optionally using knockknock-proxy:
 
